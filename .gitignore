@@ -1,0 +1,34 @@
+# ───────────── Segredos / credenciais (NUNCA versionar) ─────────────
+.env
+.env.*
+!.env.example
+*.env
+sa-key.json
+*service-account*.json
+*credentials*.json
+*client_secret*.json
+*-key.json
+*.pem
+*.p12
+
+# ───────────── Saídas geradas ─────────────
+*.pdf
+Reports/
+out/
+/tmp/
+
+# ───────────── Python ─────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+
+# ───────────── SO / editores ─────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
