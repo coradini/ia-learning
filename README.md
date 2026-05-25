@@ -36,3 +36,14 @@ Este repositório é **público**. Nenhum segredo é versionado:
 
 Entre na pasta da skill e siga o `README.md` + `references/setup.md` dela.
 Comece por [`skills/report-bugs/README.md`](skills/report-bugs/README.md).
+
+## Changelog
+
+O repositório mantém um changelog global em [`CHANGELOG.md`](CHANGELOG.md)
+(formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) +
+[Semantic Versioning](https://semver.org/lang/pt-BR/)).
+
+**Premissa do repositório:** toda mudança — seja onde for (skills, raiz,
+automações, docs, configuração) — recebe uma nota no changelog explicando
+**onde** foi feita e **por quê**. O "o quê" fica no diff; o changelog guarda a
+motivação.
