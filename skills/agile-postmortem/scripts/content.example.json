@@ -1,0 +1,65 @@
+{
+  "titulo": "POST MORTEM — EXAUSTÃO DE RATE LIMIT NO API GATEWAY",
+  "cabecalho": {
+    "appsAfetados": "Todos os apps (login via serviço de autenticação)",
+    "dataIncidente": "10/03/2025 (segunda-feira)",
+    "janelaImpacto": "~12:45 → ~13:45",
+    "indisponibilidade": "~12:45 → ~16:00 (bloqueio no API Gateway)",
+    "timeResponsavel": "Plataforma",
+    "squadLead": "ana.souza@example.com",
+    "gestor": "Bruno Lima (bruno.lima@example.com)",
+    "participantes": "Carla Dias, Diego Nunes, Equipe de Infra, Eduardo Reis, Fernanda Couto",
+    "linkTranscricao": "https://docs.google.com/document/d/EXEMPLO_ID_DA_TRANSCRICAO/edit"
+  },
+  "resumo": [
+    "No dia 10/03/2025 o serviço de autenticação sofreu um ataque de excesso de requisições (credential stuffing) na rota de login (e-mail/senha). O alto volume esgotou um rate limit de 500 chamadas/dia configurado no API Gateway — limite aplicado ao serviço inteiro, posicionado à frente das demais camadas de proteção. Ao ser atingido, o gateway passou a bloquear todo o tráfego de autenticação.",
+    "Como o bloqueio acontecia no gateway, antes do código da aplicação, nenhum alerta foi disparado. O problema só chegou à tecnologia porque a área de negócio reportou erros 429 no login. A indisponibilidade afetou todos os apps e não se limitou a novos logins: o refresh token também parou.",
+    "A contenção veio por volta das 16:00, com o aumento e a posterior desativação do rate limit do gateway. O ataque persistiu entre 16h e 20h, mas sem impacto aos usuários, pois as outras duas camadas (rate limit por IP no serviço e circuit breaker do login) seguiram funcionando."
+  ],
+  "evidenciasResumo": "gráfico de volume de requisições do API Gateway (recolar imagem)",
+  "impactos": [
+    "Serviço de autenticação indisponível em TODOS os apps — o bloqueio no gateway fica à frente de tudo.",
+    { "texto": "Não se limitou a novos logins: o refresh token parou, derrubando usuários que precisavam revalidar a sessão.", "sub": ["Especificamente usuários com mais de 24h de sessão (a confirmar)."] },
+    "Detecção tardia: percebido apenas por reporte da área de negócio, sem alerta automático."
+  ],
+  "timeline": [
+    { "dia": "Dia 1 — 10/03", "linhas": [
+      { "hora": "~11:45", "texto": "Volume de requisições começa a subir. Início do ataque à rota de login." },
+      { "hora": "~12:45", "texto": "Pico do ataque; rate limit do gateway (500/dia) é atingido e bloqueia todo o tráfego de autenticação." },
+      { "hora": "~14:36", "texto": "Área de negócio avisa que o login retornava 429. Gatilho de detecção — sem alerta automático." },
+      { "hora": "~15:40", "texto": "Acionada a Infra; hipóteses de provedor externo e mudança de infraestrutura descartadas." },
+      { "hora": "~16:00", "texto": "Identificado o rate limit do gateway; aumentado para 1000 e depois desativado." },
+      { "hora": "~16:10", "texto": "Serviço de autenticação volta ao normal." }
+    ]},
+    { "dia": "Dia 2 — 13/03", "linhas": [
+      { "hora": "—", "texto": "Durante a análise, o ataque reincide; como o gateway não limita mais, o circuit breaker atua corretamente." }
+    ]}
+  ],
+  "causaRaiz": [
+    "Gatilho: ataque de excesso de requisições (credential stuffing) na rota de login por e-mail e senha.",
+    "Causa raiz: rate limit de 500/dia no gateway por serviço inteiro (não por rota), à frente das camadas granulares; ao ser atingido, derrubou toda a autenticação em vez de conter só o login por senha.",
+    "Confirmação técnica: headers de cota esgotada (x-ratelimit-remaining-day: 0 / ratelimit-limit: 500)."
+  ],
+  "acoesContorno": [
+    "Investigação das camadas de proteção e do volume de requisições para confirmar o ataque.",
+    "Descarte das hipóteses de provedor externo e de mudança recente em infraestrutura.",
+    "Aumento do rate limit do gateway de 500 para 1000 (no serviço inteiro).",
+    "Desativação do rate limit do gateway (medida que restabeleceu o serviço)."
+  ],
+  "licoes": [
+    "Sem monitoramento/alerta: o problema chegou pela área de negócio. Falhas que contornam o código (ex.: bloqueio no gateway) hoje passam invisíveis.",
+    { "texto": "Alertas subutilizados: o alerta de autenticação não disparou (trigger sem configuração após migração).", "sub": ["Outros serviços já têm alertas funcionando e servem de referência."] },
+    "Arquitetura de rate limit inadequada: limite global por serviço, à frente das camadas granulares, vira queda total.",
+    "Baixa visibilidade de logs: não dá para separar requisições de sucesso (200) das de falha durante o ataque."
+  ],
+  "plano": [
+    { "tarefa": "Inserir proteção anti-DDoS como front de resolução de NS para a autenticação.", "descricao": "[preencher]", "responsavel": "carla.dias@example.com", "backlog": "[pendente]" },
+    { "tarefa": "Revisar e priorizar os alertas de observabilidade (épico de aplicação).", "descricao": "Testar o disparo de cada alerta pós-migração.", "responsavel": "Ana Souza", "backlog": "https://example.atlassian.net/browse/PLAT-1095" },
+    { "tarefa": "Monitorar o gateway (429/5xx e bloqueios) + health check sintético com paging.", "descricao": "Detectar o que para no gateway e não chega ao código.", "responsavel": "Equipe de Infra", "backlog": "[pendente]" }
+  ],
+  "notas": [
+    "Janela de impacto: bloqueio do gateway ~12:45→16:00 vs. impacto ao usuário ~1h. Confirmar.",
+    "Unidade do rate limit: confirmar se é por IP ou por serviço.",
+    "Evidências: reinserir imagens do volume de requisições e do header de rate limit."
+  ]
+}

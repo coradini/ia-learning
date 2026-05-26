@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-post_gchat.py — Posta a mensagem do relatório num espaço do Google Chat via
-Incoming Webhook.
+post_gchat.py — Posta a mensagem da Saúde dos Épicos por Time num espaço do
+Google Chat via Incoming Webhook.
 
-A mensagem leva o link do PDF (já hospedado no Google Drive) e um resumo
-dos números-chave, para a pessoa decidir se abre o relatório completo.
+A mensagem leva o link do PDF (já no Google Drive) e o resumo por cor, para
+cada Product Owner decidir se abre o relatório completo da sua seção (time).
 
 Variáveis de ambiente:
   GCHAT_WEBHOOK_URL  (obrigatório)  URL do Incoming Webhook do espaço
@@ -13,8 +13,9 @@ Uso:
   python3 post_gchat.py --link <DRIVE_URL> --summary-json '<JSON do build_report>'
 
   O JSON do summary é exatamente a última linha impressa por build_report.py:
-  {"pdf_path":...,"project":"MeuProjeto","date":"2026-05-18",
-   "total":59,"alta":34,"media":7,"baixa":18}
+  {"pdf_path":...,"project":"MeuProjeto","date":"2026-05-26",
+   "total":140,"fluxo":50,"funil":90,"saudavel":2,"questionavel":10,
+   "agarrado":18,"descarte":20,"funil_descarte":69}
 """
 import argparse
 import json
@@ -38,17 +39,20 @@ def post(webhook: str, text: str) -> None:
 def build_message(link: str, s: dict) -> str:
     # Google Chat (texto): negrito com *asteriscos*, link clicável <url|rótulo>.
     project = s.get("project", "")
-    titulo = f"Relatório de Bugs Abertos — {project}".rstrip(" —")
+    titulo = f"Saúde dos Épicos por Time — {project}".rstrip(" —")
     return (
         f"*{titulo}* ({s.get('date','')})\n"
-        f"Total: *{s.get('total','?')}*  •  "
-        f"🔴 ALTA (>60d): *{s.get('alta','?')}*  •  "
-        f"🟡 MÉDIA (30–60d): *{s.get('media','?')}*  •  "
-        f"🟢 BAIXA (<30d): *{s.get('baixa','?')}*\n"
+        f"Épicos ativos: *{s.get('total','?')}*  "
+        f"(em fluxo: *{s.get('fluxo','?')}*  •  funil: *{s.get('funil','?')}*)\n"
+        f"*Em fluxo:*  🟢 Saudável: *{s.get('saudavel','?')}*  •  "
+        f"🟠 Questionável: *{s.get('questionavel','?')}*  •  "
+        f"🔴 Agarrado: *{s.get('agarrado','?')}*  •  "
+        f"🟣 Para descarte: *{s.get('descarte','?')}*\n"
+        f"🟣 Funil para descarte (idade > 180d): *{s.get('funil_descarte','?')}*\n"
         f"\n---\n\n"
-        f"*Atenção SLs!* Bugs classificados com prioridade alta e média devem "
-        f"receber sua atenção. Gentileza priorizar e/ou descartar para manter "
-        f"o flow saudável do time.\n"
+        f"*POs, atenção ao seu time!* Cada seção do PDF é o seu time (AreaPath). "
+        f"Priorize os épicos 🔴 *Agarrados* e avalie *descartar* os 🟣 "
+        f"*Para descarte* (em fluxo e no funil) para manter o flow saudável.\n"
         f"\n"
         f"<{link}|📄 Abrir relatório completo com detalhe por time (PDF)>"
     )
@@ -64,7 +68,7 @@ def main():
     webhook = os.environ.get("GCHAT_WEBHOOK_URL")
     if not webhook:
         raise SystemExit(
-            "GCHAT_WEBHOOK_URL não definido. Configure seu arquivo .env "
+            "GCHAT_WEBHOOK_URL não definido. Configure ~/.config/agile/.env "
             "(ver references/setup.md)."
         )
 

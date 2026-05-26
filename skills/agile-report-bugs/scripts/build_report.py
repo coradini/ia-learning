@@ -3,6 +3,9 @@
 build_report.py — Busca bugs abertos do Azure DevOps (REST API + PAT) e gera
 um relatório em PDF agrupado por time (AreaPath), com flag de tempo aberto.
 
+Usa o cliente compartilhado `azdo.client` (../../../shared) para autenticação e
+chamadas REST — nenhuma lógica de auth vive aqui.
+
 Fluxo:
   1. WIQL  -> IDs de bugs em estados não-finalizados
   2. workitemsbatch (lotes de 200) -> Id, Title, State, AreaPath, CreatedDate
@@ -14,7 +17,7 @@ Saída:
   - stdout (última linha): JSON
     {"pdf_path","project","date","total","alta","media","baixa"}
 
-Variáveis de ambiente (carregue de um arquivo .env — ver references/setup.md):
+Variáveis de ambiente (carregue de ~/.config/agile/.env — ver shared/README.md):
   AZDO_PAT       (obrigatório)  Personal Access Token, escopo Work Items (Read)
   AZDO_ORG       (obrigatório)  nome da organização no Azure DevOps
   AZDO_PROJECT   (obrigatório)  nome do projeto no Azure DevOps
@@ -24,53 +27,30 @@ Uso:
   python3 build_report.py [--out-dir DIR]
 """
 import argparse
-import base64
 import json
 import os
 import re
+import sys
 from datetime import date
+from pathlib import Path
 
-import urllib.request
-import urllib.error
+# Bootstrap: torna o cliente compartilhado importável mesmo sem PYTHONPATH.
+# scripts -> agile-report-bugs -> skills -> <repo>/shared
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "shared"))
+from azdo.client import API_VERSION, FINALIZED_STATES, post, require_env  # noqa: E402
 
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import mm
-from reportlab.lib.enums import TA_CENTER
-from reportlab.platypus import (
+from reportlab.lib import colors  # noqa: E402
+from reportlab.lib.pagesizes import A4, landscape  # noqa: E402
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # noqa: E402
+from reportlab.lib.units import mm  # noqa: E402
+from reportlab.lib.enums import TA_CENTER  # noqa: E402
+from reportlab.platypus import (  # noqa: E402
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak, KeepTogether
 )
-
-API_VERSION = "7.1"
-# Estados considerados "finalizados" — excluídos do relatório.
-FINALIZED_STATES = ["Closed", "Resolved", "Done", "Removed", "Discarded", "Canceled"]
 
 COR_VERMELHA = colors.HexColor("#D32F2F")
 COR_AMARELA = colors.HexColor("#F9A825")
 COR_VERDE = colors.HexColor("#388E3C")
-
-
-def _auth_header(pat: str) -> str:
-    token = base64.b64encode(f":{pat}".encode()).decode()
-    return f"Basic {token}"
-
-
-def _post(url: str, payload: dict, pat: str) -> dict:
-    data = json.dumps(payload).encode()
-    req = urllib.request.Request(url, data=data, method="POST")
-    req.add_header("Content-Type", "application/json")
-    req.add_header("Authorization", _auth_header(pat))
-    try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.loads(resp.read().decode())
-    except urllib.error.HTTPError as e:
-        body = e.read().decode(errors="replace")
-        raise SystemExit(
-            f"ERRO HTTP {e.code} em {url}\n{body}\n"
-            "Verifique se o AZDO_PAT é válido e tem escopo 'Work Items (Read)', "
-            "e se AZDO_ORG/AZDO_PROJECT estão corretos."
-        )
 
 
 def fetch_open_bugs(org: str, project: str, pat: str) -> list[dict]:
@@ -86,7 +66,7 @@ def fetch_open_bugs(org: str, project: str, pat: str) -> list[dict]:
         f"https://dev.azure.com/{org}/{project}/_apis/wit/wiql"
         f"?api-version={API_VERSION}"
     )
-    result = _post(wiql_url, {"query": wiql}, pat)
+    result = post(wiql_url, {"query": wiql}, pat)
     ids = [w["id"] for w in result.get("workItems", [])]
     if not ids:
         return []
@@ -105,7 +85,7 @@ def fetch_open_bugs(org: str, project: str, pat: str) -> list[dict]:
     bugs = []
     for i in range(0, len(ids), 200):  # API aceita no máximo 200 ids por chamada
         chunk = ids[i : i + 200]
-        resp = _post(batch_url, {"ids": chunk, "fields": fields}, pat)
+        resp = post(batch_url, {"ids": chunk, "fields": fields}, pat)
         for wi in resp.get("value", []):
             f = wi["fields"]
             created_raw = f.get("System.CreatedDate", "")
@@ -333,24 +313,14 @@ def montar_pdf(bugs: list[dict], saida: str, ref: date, org: str, project: str):
     return {"total": total, "alta": c_alta, "media": c_med, "baixa": c_bx}
 
 
-def _require(name: str) -> str:
-    val = os.environ.get(name)
-    if not val:
-        raise SystemExit(
-            f"{name} não definido. Configure seu arquivo .env "
-            "(ver references/setup.md)."
-        )
-    return val
-
-
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-dir", default=os.environ.get("REPORT_OUT_DIR", "."))
     args = ap.parse_args()
 
-    pat = _require("AZDO_PAT")
-    org = _require("AZDO_ORG")
-    project = _require("AZDO_PROJECT")
+    pat = require_env("AZDO_PAT")
+    org = require_env("AZDO_ORG")
+    project = require_env("AZDO_PROJECT")
 
     ref = date.today()
     bugs = fetch_open_bugs(org, project, pat)
