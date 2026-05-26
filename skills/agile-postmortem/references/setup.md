@@ -27,6 +27,13 @@ GCHAT_WEBHOOK_URL=<URL do Incoming Webhook do seu espaço no Google Chat>
 > `agile-report-bugs` — se você já configurou aquela skill, só falta adicionar
 > `PM_DRIVE_FOLDER_ID` (e, opcionalmente, `TEAMS_WEBHOOK_URL`).
 
+> **Configuração única.** `PM_TEMPLATE_DOC_ID` e `PM_DRIVE_FOLDER_ID` são **fixos**
+> (o template é sempre o mesmo Doc; a pasta de destino é sempre a mesma). Preencha
+> uma vez no `~/.config/agile/.env` e a skill **não pergunta mais** — vai direto do
+> título do post mortem ao link do Doc duplicado. O `shared/.env.example` já lista
+> as duas variáveis como placeholders; os **valores reais** ficam só no seu
+> `~/.config/agile/.env` e **nunca** são commitados.
+
 ---
 
 ## A) Dependências

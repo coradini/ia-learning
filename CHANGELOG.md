@@ -20,6 +20,34 @@ changelog.** Cada nota deve deixar claro:
 As entradas são agrupadas por versão semântica e por tipo (`Added`, `Changed`,
 `Fixed`, `Removed`, `Security`, `Deprecated`).
 
+## [1.3.0] - 2026-05-26
+
+### Added
+
+- **Skill `agile-postmortem`**: capacidade de **mesclar** o conteúdo já preenchido
+  à mão no Doc duplicado com o extraído da transcrição. No passo 3, a skill lê o
+  Doc duplicado via `read_file_content`, ignora os placeholders do template e
+  combina três fontes (Doc manual + chat + transcrição), com **prioridade ao
+  conteúdo manual**; a transcrição preenche lacunas e divergências vão para
+  `notas`. *Onde:* `skills/agile-postmortem/SKILL.md` (passo 3),
+  `references/content-schema.md`. *Por quê:* o passo 5 **sobrescreve** o Doc — sem
+  essa mescla, tudo que o usuário escrevesse à mão na cópia era perdido.
+
+### Changed
+
+- **Skill `agile-postmortem`**: fluxo dos passos 1–3 reordenado e explicitado —
+  título → duplica o template → **devolve o link ao usuário** (entrega obrigatória)
+  → **aguarda a transcrição** → lapida. *Onde:* `skills/agile-postmortem/SKILL.md`.
+  *Por quê:* deixar inequívoco que o link do Doc duplicado é entregue antes de
+  qualquer espera, e que a lapidação só começa com a transcrição em mãos (ou após
+  o usuário declarar que não há).
+- **Skill `agile-postmortem`**: `PM_TEMPLATE_DOC_ID` e `PM_DRIVE_FOLDER_ID` passam
+  a ser tratados como **config fixa** do `~/.config/agile/.env` — uma vez
+  preenchidos, não são mais perguntados a cada execução. *Onde:* `SKILL.md`,
+  `references/setup.md`. *Por quê:* o template é sempre o mesmo Doc e a pasta de
+  destino é sempre a mesma; perguntar a cada vez era ruído (os valores reais nunca
+  vão para o repo — só placeholders em `shared/.env.example`).
+
 ## [1.2.0] - 2026-05-26
 
 ### Added
