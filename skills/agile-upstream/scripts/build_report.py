@@ -10,7 +10,7 @@ Status único por épico (faixa mais alta vence), por COR:
   🟢 Saudável       movimentação nos últimos {QUESTIONAVEL} dias
   🟠 Questionável   sem movimentação há mais de {QUESTIONAVEL} dias
   🔴 Agarrado       sem movimentação há mais de {AGARRADO} dias
-  🟣 Para descarte  sem movimentação há mais de {DESCARTE} dias
+  🟣 Possível descarte  sem movimentação há mais de {DESCARTE} dias
 
 "Movimentação" = dias desde a última mudança de estado
 (Microsoft.VSTS.Common.StateChangeDate). A skill separa o FUNIL (backlog cru —
@@ -73,7 +73,7 @@ from reportlab.platypus import (  # noqa: E402
 # runtime (mesma política do report-bugs): ajuste aqui se a cadência mudar.
 QUESTIONAVEL = 60   # > 60 dias sem movimentação → Questionável (laranja)
 AGARRADO = 90       # > 90 dias → Agarrado (vermelho)
-DESCARTE = 180      # > 180 dias → Para descarte (roxo)
+DESCARTE = 180      # > 180 dias → Possível descarte (roxo)
 
 STATECHANGE_FIELD = "Microsoft.VSTS.Common.StateChangeDate"
 
@@ -93,7 +93,7 @@ COR_ROXA = colors.HexColor("#6A1B9A")
 
 # (limiar_exclusivo, label, cor, emoji) — avaliado do mais alto para o mais baixo
 STATUS_BANDS = [
-    (DESCARTE, "Para descarte", COR_ROXA, "🟣"),
+    (DESCARTE, "Possível descarte", COR_ROXA, "🟣"),
     (AGARRADO, "Agarrado", COR_VERMELHA, "🔴"),
     (QUESTIONAVEL, "Questionável", COR_LARANJA, "🟠"),
     (-1, "Saudável", COR_VERDE, "🟢"),
@@ -224,7 +224,7 @@ def _styles():
 
 
 def _count_by_status(items: list[dict]) -> dict:
-    out = {"Saudável": 0, "Questionável": 0, "Agarrado": 0, "Para descarte": 0}
+    out = {"Saudável": 0, "Questionável": 0, "Agarrado": 0, "Possível descarte": 0}
     for x in items:
         out[x["status"]] += 1
     return out
@@ -241,7 +241,7 @@ def _cab_counts(items: list[dict]) -> str:
         f"<font size=9 color='#555555'>  ·  </font>"
         f"<font size=9 color='#D32F2F'>Agarrado {c['Agarrado']}</font>"
         f"<font size=9 color='#555555'>  ·  </font>"
-        f"<font size=9 color='#6A1B9A'>Para descarte {c['Para descarte']}</font>"
+        f"<font size=9 color='#6A1B9A'>Possível descarte {c['Possível descarte']}</font>"
     )
 
 
@@ -289,9 +289,9 @@ def _detail_table(items: list[dict], st: dict, base_url: str, metric_header: str
 
 def _sumario_por_time(times, st, metric_header):
     head = ["Time / AreaPath", "Total", "Saudável", "Questionável",
-            "Agarrado", "Para descarte"]
+            "Agarrado", "Possível descarte"]
     data = [head]
-    tot = {"Saudável": 0, "Questionável": 0, "Agarrado": 0, "Para descarte": 0}
+    tot = {"Saudável": 0, "Questionável": 0, "Agarrado": 0, "Possível descarte": 0}
     grand = 0
     for area, items in times:
         c = _count_by_status(items)
@@ -299,9 +299,9 @@ def _sumario_por_time(times, st, metric_header):
             tot[k] += c[k]
         grand += len(items)
         data.append([area, str(len(items)), str(c["Saudável"]),
-                     str(c["Questionável"]), str(c["Agarrado"]), str(c["Para descarte"])])
+                     str(c["Questionável"]), str(c["Agarrado"]), str(c["Possível descarte"])])
     data.append(["TOTAL", str(grand), str(tot["Saudável"]), str(tot["Questionável"]),
-                 str(tot["Agarrado"]), str(tot["Para descarte"])])
+                 str(tot["Agarrado"]), str(tot["Possível descarte"])])
     t = Table(data, colWidths=[96 * mm, 22 * mm, 30 * mm, 34 * mm, 28 * mm, 34 * mm],
               repeatRows=1)
     t.setStyle(TableStyle([
@@ -333,7 +333,7 @@ def _group_by_team(items):
     # ordena por mais "doente" primeiro (agarrados + descarte), depois alfabético
     return sorted(
         por_time.items(),
-        key=lambda kv: (-sum(1 for x in kv[1] if x["status"] in ("Agarrado", "Para descarte")),
+        key=lambda kv: (-sum(1 for x in kv[1] if x["status"] in ("Agarrado", "Possível descarte")),
                         kv[0]),
     )
 
@@ -374,7 +374,7 @@ def montar_pdf(epics: list[dict], saida: str, ref: date, org: str, project: str,
           f"Saudável  (movim. até {QUESTIONAVEL}d)",
           f"Questionável  (> {QUESTIONAVEL}d)",
           f"Agarrado  (> {AGARRADO}d)",
-          f"Para descarte  (> {DESCARTE}d)"]],
+          f"Possível descarte  (> {DESCARTE}d)"]],
         colWidths=[18 * mm, 62 * mm, 48 * mm, 48 * mm, 56 * mm],
     )
     legenda.setStyle(TableStyle([
@@ -395,11 +395,11 @@ def montar_pdf(epics: list[dict], saida: str, ref: date, org: str, project: str,
     # Visão geral
     story.append(Paragraph("Visão geral", st["h2"]))
     resumo = Table(
-        [["", "Total", "Saudável", "Questionável", "Agarrado", "Para descarte"],
+        [["", "Total", "Saudável", "Questionável", "Agarrado", "Possível descarte"],
          ["Em fluxo", str(len(fluxo)), str(cf["Saudável"]), str(cf["Questionável"]),
-          str(cf["Agarrado"]), str(cf["Para descarte"])],
+          str(cf["Agarrado"]), str(cf["Possível descarte"])],
          ["Funil (por idade)", str(len(funil)), str(cu["Saudável"]), str(cu["Questionável"]),
-          str(cu["Agarrado"]), str(cu["Para descarte"])]],
+          str(cu["Agarrado"]), str(cu["Possível descarte"])]],
         colWidths=[44 * mm, 24 * mm, 32 * mm, 36 * mm, 30 * mm, 36 * mm],
     )
     resumo.setStyle(TableStyle([
@@ -428,7 +428,7 @@ def montar_pdf(epics: list[dict], saida: str, ref: date, org: str, project: str,
         f"mede a movimentação (dias desde a última mudança de estado). O "
         f"<b>funil</b> (estados {', '.join(FUNNEL_STATES)}) não se move por "
         f"natureza, então é colorido pela <b>idade</b> — o item "
-        f"<font color='#6A1B9A'><b>Para descarte</b></font> do funil é o "
+        f"<font color='#6A1B9A'><b>Possível descarte</b></font> do funil é o "
         f"candidato a limpar do backlog.", st["small"]))
 
     # ── Seção EM FLUXO ──
@@ -451,7 +451,7 @@ def montar_pdf(epics: list[dict], saida: str, ref: date, org: str, project: str,
             f"Funil ({', '.join(FUNNEL_STATES)}) — por time (cor por idade)", st["h2"]))
         story.append(Paragraph(
             "Backlog cru, ainda não puxado para o fluxo. A cor mede a idade; "
-            "os <font color='#6A1B9A'><b>Para descarte</b></font> (mais de 180 "
+            "os <font color='#6A1B9A'><b>Possível descarte</b></font> (mais de 180 "
             "dias) são os candidatos a limpar.", st["small"]))
         story.append(Spacer(1, 6))
         times_funil = _group_by_team(funil)
@@ -468,7 +468,7 @@ def montar_pdf(epics: list[dict], saida: str, ref: date, org: str, project: str,
         f"<font color='#388E3C'>Saudável (até {QUESTIONAVEL}d)</font> · "
         f"<font color='#EF6C00'>Questionável (>{QUESTIONAVEL}d)</font> · "
         f"<font color='#D32F2F'>Agarrado (>{AGARRADO}d)</font> · "
-        f"<font color='#6A1B9A'>Para descarte (>{DESCARTE}d)</font>. "
+        f"<font color='#6A1B9A'>Possível descarte (>{DESCARTE}d)</font>. "
         f"Em fluxo conta dias desde {STATECHANGE_FIELD}; no funil "
         f"({', '.join(FUNNEL_STATES)}) conta a idade desde a criação. "
         f"Dias contados até a data de corte.", st["small"]))
@@ -481,8 +481,8 @@ def montar_pdf(epics: list[dict], saida: str, ref: date, org: str, project: str,
         "saudavel": cf["Saudável"],
         "questionavel": cf["Questionável"],
         "agarrado": cf["Agarrado"],
-        "descarte": cf["Para descarte"],
-        "funil_descarte": cu["Para descarte"],
+        "descarte": cf["Possível descarte"],
+        "funil_descarte": cu["Possível descarte"],
     }
 
 
