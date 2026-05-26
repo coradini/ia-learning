@@ -7,7 +7,7 @@ Um exemplo completo e válido está em `scripts/content.example.json`. Campos:
   "titulo": "POST MORTEM — <título breve>",            // string (vira H1)
 
   "cabecalho": {                                         // qualquer campo vazio é omitido
-    "appsAfetados": "...",
+    "appsAfetados": ["App A", "App B"],                   // SÓ nomes (array) → vira sub-bullets; string com vírgulas também é aceita e dividida
     "dataIncidente": "...",
     "janelaImpacto": "...",                              // janela sentida pelo usuário
     "indisponibilidade": "...",                          // janela do serviço (se diferente)
@@ -18,7 +18,7 @@ Um exemplo completo e válido está em `scripts/content.example.json`. Campos:
     "linkTranscricao": "https://..."                     // link da ata/transcrição (vira hyperlink)
   },
 
-  "resumo": ["parágrafo 1", "parágrafo 2"],              // array de parágrafos
+  "resumo": ["parágrafo 1", "parágrafo 2"],              // array; o 1º parágrafo foca o IMPACTO AO NEGÓCIO (e estimativa financeira, se houver)
   "evidenciasResumo": "descrição da evidência",          // opcional; sai em itálico cinza
 
   "impactos":  [ item, ... ],                            // ver "item" abaixo
@@ -49,6 +49,12 @@ Pode ser:
 - O que a transcrição não permitir afirmar entra como `"[preencher]"` ou como item em `notas`.
 - Timeline sempre cronológica; agrupar por `dia` quando o incidente cruza mais de um dia.
 - Não inventar responsáveis, horários ou causa raiz.
+- **`appsAfetados`**: apenas os **nomes** dos apps/sistemas (não uma descrição). Se
+  não ficar claro quais sistemas foram afetados, deixe `"[preencher]"` e pergunte
+  ao final do post mortem (ver passo de revisão no `SKILL.md`).
+- **`resumo` (1º parágrafo)**: foca o **impacto ao negócio** — o que o cliente/
+  operação deixou de fazer — e, se houver, a **estimativa de impacto financeiro**.
+  O detalhe técnico (gatilho, causa, contenção) vem nos parágrafos seguintes.
 
 ## Mescla de fontes (prioridade)
 O JSON é alimentado por **três fontes**, mescladas no passo 3 do `SKILL.md`:

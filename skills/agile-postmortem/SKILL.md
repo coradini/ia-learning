@@ -165,6 +165,16 @@ aqui — caso contrário é perdido.**
 8. Para conferir visualmente, converta para imagem e olhe (LibreOffice + pdftoppm)
    antes de mostrar.
 
+> **Como compor duas seções (regras de conteúdo):**
+> - **Resumo — 1º parágrafo**: foque o **impacto ao negócio** (o que o cliente/a
+>   operação deixou de fazer) e, se a pessoa informar, **destaque a estimativa de
+>   impacto financeiro**. O detalhe técnico (gatilho, causa, contenção) vem nos
+>   parágrafos seguintes.
+> - **Apps ou sites afetados (`appsAfetados`)**: registre **apenas os nomes** dos
+>   apps/sistemas (vira sub-bullets), nunca uma descrição. Se não ficar claro quais
+>   sistemas foram afetados, deixe `[preencher]` e **pergunte no fechamento**
+>   (passo 4).
+
 ### 4 · Revisar com a pessoa até ficar coerente
 Este é o coração da skill — não despeje o documento e suma. Conduza uma revisão:
 - Apresente seção por seção o que foi extraído (Resumo, Impactos, Timeline, Causa
@@ -177,6 +187,17 @@ Este é o coração da skill — não despeje o documento e suma. Conduza uma re
   detectado isso mais cedo?").
 - A cada rodada de correções, atualize o JSON e **regenere o `.docx`** (nunca
   edite o texto solto).
+
+**Antes de fechar (checagens obrigatórias):**
+- **Cobertura Lições → Plano de Ação**: varra cada item de **Lições Aprendidas** e
+  verifique se há, no **Plano de Ação**, ao menos uma tarefa que mitigue aquele
+  problema. Para **toda lição sem plano correspondente**, **proponha um plano de
+  ação no modo perguntas aqui no Claude** (ferramenta de pergunta com algumas
+  opções de tarefa — ex.: criar alerta, ajustar arquitetura, revisar processo —
+  mais a opção de não criar). Só inclua no `plano` o que a pessoa escolher; não
+  invente responsável/backlog (deixe `[preencher]`/`[pendente]`).
+- **Apps afetados**: se `appsAfetados` ainda estiver `[preencher]` (não ficou claro
+  quais sistemas foram atingidos), **pergunte agora** quais foram, e só então feche.
 - Repita até a pessoa aprovar. Só então vá ao passo 5.
 
 ### 5 · Gravar o conteúdo no Doc duplicado (mesma URL)

@@ -1,7 +1,7 @@
 {
   "titulo": "POST MORTEM — EXAUSTÃO DE RATE LIMIT NO API GATEWAY",
   "cabecalho": {
-    "appsAfetados": "Todos os apps (login via serviço de autenticação)",
+    "appsAfetados": ["App Cliente (iOS)", "App Cliente (Android)", "Portal Web", "Checkout"],
     "dataIncidente": "10/03/2025 (segunda-feira)",
     "janelaImpacto": "~12:45 → ~13:45",
     "indisponibilidade": "~12:45 → ~16:00 (bloqueio no API Gateway)",
@@ -12,6 +12,7 @@
     "linkTranscricao": "https://docs.google.com/document/d/EXEMPLO_ID_DA_TRANSCRICAO/edit"
   },
   "resumo": [
+    "Impacto ao negócio: por cerca de 1 hora (12:45–13:45) os clientes não conseguiram fazer login em nenhum app, derrubando também o checkout — impedindo novas compras na janela de pico do almoço. Estimativa de impacto financeiro: ~R$ 120 mil em vendas não realizadas (a confirmar com o time de negócio).",
     "No dia 10/03/2025 o serviço de autenticação sofreu um ataque de excesso de requisições (credential stuffing) na rota de login (e-mail/senha). O alto volume esgotou um rate limit de 500 chamadas/dia configurado no API Gateway — limite aplicado ao serviço inteiro, posicionado à frente das demais camadas de proteção. Ao ser atingido, o gateway passou a bloquear todo o tráfego de autenticação.",
     "Como o bloqueio acontecia no gateway, antes do código da aplicação, nenhum alerta foi disparado. O problema só chegou à tecnologia porque a área de negócio reportou erros 429 no login. A indisponibilidade afetou todos os apps e não se limitou a novos logins: o refresh token também parou.",
     "A contenção veio por volta das 16:00, com o aumento e a posterior desativação do rate limit do gateway. O ataque persistiu entre 16h e 20h, mas sem impacto aos usuários, pois as outras duas camadas (rate limit por IP no serviço e circuit breaker do login) seguiram funcionando."

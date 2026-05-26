@@ -91,8 +91,18 @@ children.push(h1(C.titulo || "POST MORTEM"));
 
 // CABEÇALHO
 const cab = C.cabecalho || {};
+
+// Apps ou sites afetados: SÓ os nomes, em sub-bullets indentados (não descrição).
+const apps = cab.appsAfetados;
+if (apps !== undefined && apps !== null && apps !== "") {
+  const appList = Array.isArray(apps)
+    ? apps
+    : String(apps).split(/[;,\n]/).map(s => s.trim()).filter(Boolean);
+  children.push(bullet([t("Apps ou sites afetados:", { bold: true })]));
+  appList.forEach(a => children.push(bullet(valueRuns(a), 1)));
+}
+
 const cabFields = [
-  ["Apps ou sites afetados: ", cab.appsAfetados],
   ["Data do Incidente: ", cab.dataIncidente],
   ["Janela do impacto para usuário: ", cab.janelaImpacto],
   ["Indisponibilidade do serviço: ", cab.indisponibilidade],

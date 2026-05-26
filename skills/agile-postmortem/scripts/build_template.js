@@ -38,7 +38,10 @@ const children = [];
 children.push(h1("POST MORTEM — [PREENCHER: TÍTULO BREVE DO INCIDENTE]"));
 
 // HEADER
-children.push(labelVal("Apps ou sites afetados: ", [t(FILL)]));
+// Apps ou sites afetados: só os nomes, em sub-bullets indentados.
+children.push(bullet([t("Apps ou sites afetados:", { bold: true })]));
+children.push(bullet([t(FILL + " — nome do app/sistema")], 1));
+children.push(bullet([t(FILL)], 1));
 children.push(labelVal("Data do Incidente: ", [t(FILL)]));
 children.push(labelVal("Janela do impacto para usuário: ", [t(FILL)]));
 children.push(labelVal("Indisponibilidade do serviço: ", [t(FILL)]));

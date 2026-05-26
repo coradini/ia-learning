@@ -20,6 +20,28 @@ changelog.** Cada nota deve deixar claro:
 As entradas são agrupadas por versão semântica e por tipo (`Added`, `Changed`,
 `Fixed`, `Removed`, `Security`, `Deprecated`).
 
+## [1.3.1] - 2026-05-26
+
+### Changed
+
+- **Skill `agile-postmortem`** — três refinamentos de conteúdo do post mortem.
+  *Onde:* `skills/agile-postmortem/` (`scripts/build_postmortem.js`,
+  `scripts/build_template.js`, `scripts/content.example.json`,
+  `references/content-schema.md`, `SKILL.md`).
+  - **Apps ou sites afetados**: passou a renderizar **apenas os nomes** dos
+    apps/sistemas em **sub-bullets indentados** (aceita array ou string com
+    vírgulas), em vez de descrição em linha única. Se não ficar claro quais
+    sistemas foram afetados, a skill marca `[preencher]` e **pergunta no
+    fechamento**. *Por quê:* o cabeçalho deve listar sistemas, não narrar.
+  - **Resumo (1º parágrafo)**: orientação para **liderar pelo impacto ao negócio**
+    e destacar a **estimativa de impacto financeiro** quando informada, deixando o
+    detalhe técnico para os parágrafos seguintes. *Por quê:* o leitor executivo lê
+    o impacto primeiro.
+  - **Escopo de revisão (fechamento)**: antes de fechar, a skill **varre as Lições
+    Aprendidas** e, para cada lição sem tarefa correspondente no Plano de Ação,
+    **propõe um plano no modo perguntas (com opções)** ao usuário. *Por quê:*
+    garantir que todo aprendizado vire ação rastreável, sem inventar dados.
+
 ## [1.3.0] - 2026-05-26
 
 ### Added
