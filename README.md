@@ -1,8 +1,9 @@
-# agentes-agilidade
+# ia-learning
 
-Skills de **gestão de fluxo ágil** sobre o **Azure DevOps** — inspeção de
-upstream (épicos, user stories), downstream e métricas de fluxo. Construídas
-para rodar no Claude Code, de forma interativa ou agendada.
+Família de skills **`agile-*`** para o **Claude Code**: gestão de fluxo ágil
+sobre o **Azure DevOps** (inspeção de upstream, épicos, métricas de fluxo) e
+operações correlatas — como a produção de **post mortems** de incidente. Rodam
+de forma interativa ou agendada.
 
 ## Estrutura
 
